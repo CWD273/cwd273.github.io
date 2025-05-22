@@ -11,20 +11,19 @@
 
     <!-- Header -->
     <header>
+        <img src="f.png" alt="CWD Icon">
         <h1>CWD inc</h1>
         <nav>
-            <ul>
-                <li><a href="#about">About</a></li>
-                <li><a href="#pages">Pages</a></li>
-            </ul>
+            <button onclick="showTab('about', this)" class="active">About</button>
+            <button onclick="showTab('pages', this)">Pages</button>
         </nav>
     </header>
 
     <!-- About Section -->
-    <section id="about">
+    <section id="about" class="active">
         <h2>About</h2>
-        <p>Welcome to CWD inc. This website is dedicated to providing high-quality, free unblocked games and interactive experiences.</p>
-        <a href="#pages" class="btn">Go to Pages</a>
+        <p>Welcome to CWD inc. This website is dedicated to providing high-quality, free unblocked games.</p>
+        <button onclick="showTab('pages')">Go to Pages</button>
     </section>
 
     <!-- Pages Section -->
@@ -46,6 +45,24 @@
     <footer>
         <p>©2025 CWD inc.</p>
     </footer>
+
+    <script>
+        function showTab(tabName, button) {
+            const allSections = document.querySelectorAll('section');
+            allSections.forEach(section => section.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            const allButtons = document.querySelectorAll('nav button');
+            allButtons.forEach(btn => btn.classList.remove('active'));
+            if (button) {
+                button.classList.add('active');
+            }
+        }
+
+        window.onload = function() {
+            showTab('about');
+        };
+    </script>
 
 </body>
 </html>
