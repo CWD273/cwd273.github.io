@@ -1,54 +1,59 @@
-/* General Styles */
 body {
+    background: linear-gradient(to right, #6a11cb, #6a11ce);
+    color: white;
     font-family: Arial, sans-serif;
+    padding-top: 150px;
     margin: 0;
-    padding: 0;
     text-align: center;
 }
 
 /* Header */
 header {
-    background-color: #0077cc;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background-color: #333;
+    border-bottom: 3px solid #6a11cb;
+    z-index: 1000;
+    text-align: center;
+}
+
+header img {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+nav {
+    margin-top: 15px;
+}
+
+nav button {
+    background-color: #333;
     color: white;
-    padding: 15px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
 }
 
-nav ul {
-    list-style: none;
-    padding: 0;
-}
-
-nav ul li {
-    display: inline;
-    margin: 0 10px;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
+nav button.active {
+    background-color: #6a11cb;
 }
 
 /* Sections */
 section {
-    margin: 40px;
+    display: none;
     padding: 20px;
 }
 
-/* Button */
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #0077cc;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
+section.active {
+    display: block;
 }
 
-.btn:hover {
-    background-color: #005fa3;
-}
-
-/* Card Layout */
+/* Card */
 .card-container {
     display: flex;
     justify-content: center;
@@ -64,11 +69,6 @@ section {
     color: black;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: scale(1.05);
 }
 
 .card img {
@@ -82,10 +82,9 @@ section {
 
 /* Footer */
 footer {
-    background-color: #0077cc;
+    background-color: #333;
     color: white;
     padding: 10px;
     position: relative;
-    bottom: 0;
     width: 100%;
 }
