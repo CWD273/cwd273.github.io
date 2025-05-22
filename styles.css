@@ -53,6 +53,22 @@ section.active {
     display: block;
 }
 
+/* Styled Button */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #6a11cb;
+}
+
 /* Card */
 .card-container {
     display: flex;
@@ -80,11 +96,12 @@ section.active {
     margin: 10px;
 }
 
-/* Footer */
+/* Footer (Fixed to Bottom) */
 footer {
     background-color: #333;
     color: white;
     padding: 10px;
-    position: relative;
+    position: fixed;
+    bottom: 0;
     width: 100%;
 }
