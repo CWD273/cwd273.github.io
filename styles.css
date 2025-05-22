@@ -14,8 +14,8 @@ header {
     left: 0;
     width: 100%;
     padding: 20px;
-    background-color: red;
-    border-bottom: 3px solid #6a11cb;
+    background-color: #8f0000;
+    border-bottom: 0px solid #6a11cb;
     z-index: 1000;
     text-align: center;
 }
@@ -32,7 +32,7 @@ nav {
 }
 
 nav button {
-    background-color: blue;
+    background-color: #8f0000;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -40,7 +40,7 @@ nav button {
 }
 
 nav button.active {
-    background-color: red;
+    background-color: blue;
 }
 
 /* Sections */
@@ -79,7 +79,7 @@ section.active {
 .card {
     background-color: blue;
     width: 250px;
-    border: 0px solid #ddd;
+    border: 0px solid #1f1f;
     border-radius: 10px;
     text-decoration: none;
     color: black;
@@ -99,7 +99,7 @@ section.active {
 
 /* Footer (Fixed to Bottom) */
 footer {
-    background-color: red;
+    background-color: #8f0000;
     color: white;
     padding: 10px;
     position: fixed;
