@@ -14,7 +14,7 @@ header {
     left: 0;
     width: 100%;
     padding: 20px;
-    background-color: #333;
+    background-color: red;
     border-bottom: 3px solid #6a11cb;
     z-index: 1000;
     text-align: center;
@@ -23,7 +23,7 @@ header {
 header img {
     width: 50px;
     height: 50px;
-    border-radius: 10px;
+    border-radius: 25px;
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -32,7 +32,7 @@ nav {
 }
 
 nav button {
-    background-color: #333;
+    background-color: blue;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -40,7 +40,7 @@ nav button {
 }
 
 nav button.active {
-    background-color: #6a11cb;
+    background-color: red;
 }
 
 /* Sections */
@@ -57,7 +57,7 @@ section.active {
 .btn {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #333;
+    background-color: blue;
     color: white;
     border: none;
     cursor: pointer;
@@ -66,7 +66,7 @@ section.active {
 }
 
 .btn:hover {
-    background-color: #6a11cb;
+    background-color: red;
 }
 
 /* Card */
@@ -77,10 +77,10 @@ section.active {
 }
 
 .card {
-    background-color: white;
+    background-color: blue;
     width: 250px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: 0px solid #ddd;
+    border-radius: 10px;
     text-decoration: none;
     color: black;
     overflow: hidden;
@@ -90,6 +90,7 @@ section.active {
 .card img {
     width: 100%;
     height: auto;
+    border-radius: 10px;
 }
 
 .card h2, .card p {
@@ -98,7 +99,7 @@ section.active {
 
 /* Footer (Fixed to Bottom) */
 footer {
-    background-color: #333;
+    background-color: red;
     color: white;
     padding: 10px;
     position: fixed;
