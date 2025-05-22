@@ -1,3 +1,4 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -5,12 +6,49 @@ body {
     text-align: center;
 }
 
+/* Header */
 header {
     background-color: #0077cc;
     color: white;
+    padding: 15px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+/* Sections */
+section {
+    margin: 40px;
     padding: 20px;
 }
 
+/* Button */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0077cc;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.btn:hover {
+    background-color: #005fa3;
+}
+
+/* Card Layout */
 .card-container {
     display: flex;
     justify-content: center;
@@ -38,10 +76,16 @@ header {
     height: auto;
 }
 
-.card h2 {
+.card h2, .card p {
     margin: 10px;
 }
 
-.card p {
-    padding: 0 10px 10px;
+/* Footer */
+footer {
+    background-color: #0077cc;
+    color: white;
+    padding: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
 }
