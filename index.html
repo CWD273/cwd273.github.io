@@ -8,8 +8,6 @@
     <link rel="icon" href="f.png" type="image/png">
 </head>
 <body>
-
-    <!-- Header -->
     <header>
         <img src="f.png" alt="CWD Icon">
         <h1>CWD inc</h1>
@@ -18,15 +16,11 @@
             <button onclick="showTab('pages', this)">Pages</button>
         </nav>
     </header>
-
-    <!-- About Section -->
     <section id="about" class="active">
         <h2>About</h2>
         <p>Welcome to CWD inc. This website is dedicated to providing high-quality, free unblocked games.</p>
         <button class="btn" onclick="showTab('pages')">Go to Pages</button>
     </section>
-
-    <!-- Pages Section -->
     <section id="pages">
         <h2>Pages</h2>
         <p>Explore various resources and interactive elements offered by CWD inc.</p>
@@ -38,29 +32,29 @@
             </a>
         </div>
     </section>
-
-    <!-- Footer -->
     <footer>
         <p>©2025 CWD inc.</p>
     </footer>
-
     <script>
-        function showTab(tabName, button) {
-            const allSections = document.querySelectorAll('section');
-            allSections.forEach(section => section.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
+    function showTab(tabName, button) {
+        const allSections = document.querySelectorAll('section');
+        allSections.forEach(section => section.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
 
-            const allButtons = document.querySelectorAll('nav button');
-            allButtons.forEach(btn => btn.classList.remove('active'));
-            if (button) {
-                button.classList.add('active');
-            }
+        const allButtons = document.querySelectorAll('nav button');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        if (button) {
+            button.classList.add('active');
         }
+    }
 
-        window.onload = function() {
-            showTab('about');
-        };
-    </script>
+    document.querySelector(".btn").addEventListener("click", function() {
+        showTab('pages', document.querySelector("nav button:nth-child(2)"));
+    });
 
+    window.onload = function() {
+        showTab('about');
+    };
+</script>
 </body>
 </html>
