@@ -35,7 +35,7 @@
     <footer>
         <p>©2025 CWD inc.</p>
     </footer>
-    <script>
+   <script>
     function showTab(tabName, button) {
         const allSections = document.querySelectorAll('section');
         allSections.forEach(section => section.classList.remove('active'));
@@ -53,7 +53,7 @@
     });
 
     window.onload = function() {
-        showTab('about');
+        showTab('about', document.querySelector("nav button:nth-child(1)"));
     };
 </script>
 </body>
