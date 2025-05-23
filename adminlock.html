@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        input { padding: 10px; margin: 10px; }
+        button { padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+	
+    <input type="text" id="username" placeholder="Username">
+    <div>
+    <input type="password" id="password" placeholder="Password">
+    <div>
+    <button onclick="login()">Go</button>
+    <p id="message"></p>
+
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            
+            const response = await fetch("https://devacessportal.onrender.com/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            document.getElementById("message").innerText = data.message;
+
+            if (data.success) {
+                window.location.href = "school.html"; // Redirect to the secured page
+            }
+        }
+    </script>
+</body>
+</html>
