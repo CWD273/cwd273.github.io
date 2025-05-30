@@ -1,3 +1,4 @@
+/* General Styles */
 body {
     background-color: #121212;
     color: #ffffff;
@@ -6,6 +7,7 @@ body {
     margin: 0;
 }
 
+/* Header */
 header {
     background-color: #1f1f1f;
     padding: 15px;
@@ -25,11 +27,13 @@ header {
     margin-right: 10px;
 }
 
+/* Title */
 .main-title {
     margin: 40px 0;
     font-size: 2.5em;
 }
 
+/* Scrollable Sections */
 .card-section {
     text-align: left;
     margin: 30px;
@@ -39,9 +43,21 @@ header {
     margin-bottom: 15px;
 }
 
+/* Scrollable Wrapper */
+.scroll-wrapper {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 10px;
+}
+
+/* Hide scrollbar for smooth scrolling */
+.scroll-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* Card Layout */
 .card-container {
     display: flex;
-    justify-content: center;
     gap: 20px;
 }
 
@@ -50,6 +66,7 @@ header {
     padding: 15px;
     border-radius: 8px;
     width: 200px;
+    display: inline-block;
 }
 
 .card img {
