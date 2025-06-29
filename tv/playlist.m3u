@@ -1,6 +1,6 @@
 #EXTM3U x-tvg-url="https://tvpass.org/epg.xml"
 #EXTINF:-1 tvg-id="ae-us-eastern-feed" tvg-name="A&E US Eastern Feed SD" group-title="Live",A&E US Eastern Feed SD
-https://tvpass.org/live/AEEast/sd
+https://v18.thetvapp.to/hls/AEEast/tracks-v1a1/mono.m3u8?token=VsOLrWWby0YkTcLAN0TD1g&expires=1751222525&user_id=MjYwMDo2YzQ2Ojc2N2Y6ODJkZTpmY2U4OmIyMTA6Y2JhZDo5YTRm
 #EXTINF:-1 tvg-id="ae-us-eastern-feed" tvg-name="A&E US Eastern Feed HD" group-title="Live",A&E US Eastern Feed HD
 https://tvpass.org/live/AEEast/hd
 #EXTINF:-1 tvg-id="abc-kabc-los-angeles-ca" tvg-name="ABC (KABC) Los Angeles SD" group-title="Live",ABC (KABC) Los Angeles SD
