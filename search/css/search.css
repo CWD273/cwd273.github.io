@@ -1,0 +1,46 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #ffffff;
+  padding: 2rem;
+  margin: 0;
+  color: #333;
+}
+
+.results-container {
+  max-width: 800px;
+  margin: auto;
+}
+
+.results-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-box {
+  background-color: #f0f4f8;
+  padding: 1rem;
+  border-left: 4px solid #0078d4;
+  margin-bottom: 2rem;
+  border-radius: 4px;
+}
+
+.sources-list {
+  list-style: none;
+  padding: 0;
+}
+
+.sources-list li {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.sources-list a {
+  color: #0078d4;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.sources-list a:hover {
+  text-decoration: underline;
+}
