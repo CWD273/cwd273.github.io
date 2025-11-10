@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "builds": [{ "src": "api/summarize.py", "use": "@vercel/python" }],
+  "routes": [{ "src": "/api/summarize", "dest": "/api/summarize.py" }]
+}
