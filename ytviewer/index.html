@@ -7,7 +7,7 @@
 
 <style>
   :root {
-    --vh: 1vh; /* updated by JS */
+    --vh: 1vh; /* updated dynamically */
   }
 
   body {
@@ -47,14 +47,21 @@
     cursor: pointer;
   }
 
-  /* Fullscreen toggle button (hidden unless fullscreen) */
+  /* Fullscreen toggle button */
   #fs-btn {
+    position: relative; /* normal mode */
+    z-index: 10;
+    margin-left: 0.5rem;
+  }
+
+  /* Float only in fullscreen */
+  .fullscreen #fs-btn,
+  .pseudo-fullscreen #fs-btn {
     position: fixed;
     top: 10px;
     right: 10px;
     z-index: 99999;
     opacity: 0.9;
-    display: none; /* only shown in fullscreen */
   }
 
   /* Main layout */
@@ -133,9 +140,8 @@
 <header>
   <input id="yt-input" placeholder="YouTube URL or ID" />
   <button id="load-btn">Load</button>
+  <button id="fs-btn"><sup>⇱</sup><sub>⇲</sub></button>
 </header>
-
-<button id="fs-btn"><sup>⇱</sup><sub>⇲</sub></button>
 
 <div id="container">
   <div id="video-wrapper">
@@ -197,13 +203,15 @@
       container.classList.contains("pseudo-fullscreen");
 
     if (isFull) {
+      // EXIT FULLSCREEN
       if (document.fullscreenElement) document.exitFullscreen();
       container.classList.remove("fullscreen", "pseudo-fullscreen");
-      fsBtn.style.display = "none";
-      fsBtn.innerHTML = "<sup>⇱</sup><sub>⇲</sub>";
+
+      fsBtn.innerHTML = "<sup>⇱</sup><sub>⇲</sub>"; // enter icon
       return;
     }
 
+    // ENTER FULLSCREEN
     if (!isIOS() && container.requestFullscreen) {
       container.requestFullscreen();
       container.classList.add("fullscreen");
@@ -211,8 +219,7 @@
       container.classList.add("pseudo-fullscreen");
     }
 
-    fsBtn.style.display = "block";
-    fsBtn.innerHTML = "<sup>⇲</sup><sub>⇱</sub>";
+    fsBtn.innerHTML = "<sup>⇲</sup><sub>⇱</sub>"; // exit icon
   }
 
   fsBtn.onclick = toggleFullscreen;
