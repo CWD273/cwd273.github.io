@@ -47,16 +47,15 @@
     cursor: pointer;
   }
 
-  /* Fullscreen toggle button */
+  /* Fullscreen toggle button — normal mode */
   #fs-btn {
-    position: relative; /* normal mode */
+    position: relative;
     z-index: 10;
     margin-left: 0.5rem;
   }
 
-  /* Float only in fullscreen */
-  .fullscreen #fs-btn,
-  .pseudo-fullscreen #fs-btn {
+  /* Fullscreen mode: float above everything */
+  #fs-btn.fullscreen-active {
     position: fixed;
     top: 10px;
     right: 10px;
@@ -207,6 +206,7 @@
       if (document.fullscreenElement) document.exitFullscreen();
       container.classList.remove("fullscreen", "pseudo-fullscreen");
 
+      fsBtn.classList.remove("fullscreen-active");
       fsBtn.innerHTML = "<sup>⇱</sup><sub>⇲</sub>"; // enter icon
       return;
     }
@@ -219,6 +219,7 @@
       container.classList.add("pseudo-fullscreen");
     }
 
+    fsBtn.classList.add("fullscreen-active");
     fsBtn.innerHTML = "<sup>⇲</sup><sub>⇱</sub>"; // exit icon
   }
 
