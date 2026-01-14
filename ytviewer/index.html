@@ -6,6 +6,10 @@
 <title>YouTube Stream Viewer</title>
 
 <style>
+  :root {
+    --vh: 1vh; /* updated by JS */
+  }
+
   body {
     margin: 0;
     background: #111;
@@ -20,8 +24,8 @@
     gap: 0.5rem;
     align-items: center;
     background: #111;
-    z-index: 10000;
     position: relative;
+    z-index: 10;
   }
 
   input {
@@ -43,13 +47,14 @@
     cursor: pointer;
   }
 
-  /* Fullscreen button must always float above everything */
+  /* Fullscreen toggle button (hidden unless fullscreen) */
   #fs-btn {
     position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 999999;
+    z-index: 99999;
     opacity: 0.9;
+    display: none; /* only shown in fullscreen */
   }
 
   /* Main layout */
@@ -57,7 +62,7 @@
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
-    height: calc(100vh - 70px);
+    height: calc(var(--vh) * 100 - 70px);
     overflow: hidden;
   }
 
@@ -93,40 +98,32 @@
     background: #000;
   }
 
-  /* Fullscreen mode layout */
-  .fullscreen {
+  /* Fullscreen mode */
+  .fullscreen,
+  .pseudo-fullscreen {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 9999 !important;
+    z-index: 9998 !important;
     display: grid !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: calc(var(--vh) * 100) !important;
     overflow: hidden !important;
   }
 
   /* Fullscreen layout: narrow screens → chat below */
-  .fullscreen {
+  .fullscreen,
+  .pseudo-fullscreen {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
   }
 
   /* Fullscreen layout: wide screens → chat right */
   @media (min-width: 900px) {
-    .fullscreen {
+    .fullscreen,
+    .pseudo-fullscreen {
       grid-template-columns: 3fr 1fr !important;
       grid-template-rows: 1fr !important;
     }
-  }
-
-  /* iOS fallback */
-  .pseudo-fullscreen {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 9999 !important;
-    display: grid !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    overflow: hidden !important;
   }
 </style>
 </head>
@@ -138,7 +135,7 @@
   <button id="load-btn">Load</button>
 </header>
 
-<button id="fs-btn">Fullscreen</button>
+<button id="fs-btn"><sup>⇱</sup><sub>⇲</sub></button>
 
 <div id="container">
   <div id="video-wrapper">
@@ -156,6 +153,13 @@
   const chatFrame = document.getElementById("chat-frame");
 
   const EMBED_DOMAIN = window.location.hostname;
+
+  /* Fix iOS viewport height */
+  function updateVh() {
+    document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
+  }
+  updateVh();
+  window.addEventListener("resize", updateVh);
 
   function extractVideoId(value) {
     value = value.trim();
@@ -195,6 +199,8 @@
     if (isFull) {
       if (document.fullscreenElement) document.exitFullscreen();
       container.classList.remove("fullscreen", "pseudo-fullscreen");
+      fsBtn.style.display = "none";
+      fsBtn.innerHTML = "<sup>⇱</sup><sub>⇲</sub>";
       return;
     }
 
@@ -204,6 +210,9 @@
     } else {
       container.classList.add("pseudo-fullscreen");
     }
+
+    fsBtn.style.display = "block";
+    fsBtn.innerHTML = "<sup>⇲</sup><sub>⇱</sub>";
   }
 
   fsBtn.onclick = toggleFullscreen;
