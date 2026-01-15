@@ -184,7 +184,7 @@
     const id = extractVideoId(input.value);
     if (!id) return alert("Invalid YouTube ID");
 
-    videoFrame.src = `https://www.youtube.com/embed/${id}`;
+    videoFrame.src = `https://www.youtube.com/embed/${id}?controls=O`;
     chatFrame.src =
       `https://www.youtube.com/live_chat?v=${id}&embed_domain=${EMBED_DOMAIN}`;
   }
