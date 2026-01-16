@@ -1,6 +1,6 @@
   const input = document.getElementById("yt-input");
-  const loadBtn = document.getElementById("load-btn");
-  const fsBtn = document.getElementById("fs-btn");
+  const loadBtn = document.getElementById("load-btn");  const fsEnter = document.getElementById("fs-enter");
+  const fsExit = document.getElementById("fs-exit");
   const container = document.getElementById("container");
   const videoFrame = document.getElementById("video-frame");
   const chatFrame = document.getElementById("chat-frame");
@@ -32,7 +32,7 @@
     const id = extractVideoId(input.value);
     if (!id) return alert("Invalid YouTube ID");
 
-    videoFrame.src = `https://www.youtube.com/embed/${id}?controls=O`;
+    videoFrame.src = `https://www.youtube.com/embed/${id}`;
     chatFrame.src =
       `https://www.youtube.com/live_chat?v=${id}&embed_domain=${EMBED_DOMAIN}`;
   }
@@ -44,31 +44,31 @@
     return /iPad|iPhone|iPod/.test(navigator.userAgent);
   }
 
-  function toggleFullscreen() {
-    const isFull =
-      document.fullscreenElement ||
-      container.classList.contains("pseudo-fullscreen");
-
-    if (isFull) {
-      // EXIT FULLSCREEN
-      if (document.fullscreenElement) document.exitFullscreen();
-      container.classList.remove("fullscreen", "pseudo-fullscreen");
-
-      fsBtn.classList.remove("fullscreen-active");
-      fsBtn.innerHTML = "<sup>⇱</sup><sub>⇲</sub>"; // enter icon
-      return;
-    }
-
-    // ENTER FULLSCREEN
+  function enterFullscreen() {
     if (!isIOS() && container.requestFullscreen) {
       container.requestFullscreen();
       container.classList.add("fullscreen");
     } else {
       container.classList.add("pseudo-fullscreen");
     }
-
-    fsBtn.classList.add("fullscreen-active");
-    fsBtn.innerHTML = "<sup>⇲</sup><sub>⇱</sub>"; // exit icon
+    document.body.classList.add("is-fullscreen");
   }
 
-  fsBtn.onclick = toggleFullscreen;
+  function exitFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+    container.classList.remove("fullscreen", "pseudo-fullscreen");
+    document.body.classList.remove("is-fullscreen");
+  }
+
+  fsEnter.onclick = enterFullscreen;
+  fsExit.onclick = exitFullscreen;
+
+  // Optional: handle user exiting fullscreen via system UI
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement) {
+      container.classList.remove("fullscreen");
+      document.body.classList.remove("is-fullscreen");
+    }
+  });
