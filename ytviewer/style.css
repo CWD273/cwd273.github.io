@@ -1,4 +1,4 @@
-  :root {
+:root {
     --vh: 1vh; /* updated dynamically */
   }
 
@@ -39,15 +39,24 @@
     cursor: pointer;
   }
 
-  /* Fullscreen toggle button — normal mode */
-  #fs-btn {
+  /* Enter / exit fullscreen buttons in normal mode */
+  #fs-enter,
+  #fs-exit {
     position: relative;
     z-index: 10;
     margin-left: 0.5rem;
   }
 
-  /* Fullscreen mode: float above everything */
-  #fs-btn.fullscreen-active {
+  /* Only show enter in normal mode */
+  #fs-enter { display: inline-flex; }
+  #fs-exit { display: none; }
+
+  /* When fullscreen: swap visibility */
+  body.is-fullscreen #fs-enter { display: none; }
+  body.is-fullscreen #fs-exit { display: inline-flex; }
+
+  /* Float exit button in fullscreen */
+  body.is-fullscreen #fs-exit {
     position: fixed;
     top: 10px;
     right: 10px;
