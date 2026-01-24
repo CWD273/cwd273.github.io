@@ -5,7 +5,7 @@ const fsExit = document.getElementById("fs-exit");
 const container = document.getElementById("container");
 const videoFrame = document.getElementById("video-frame");
 const chatFrame = document.getElementById("chat-frame");
-const EMBED_DOMAIN = window.location.hostname || "localhost";
+const EMBED_DOMAIN = window.location.hostname || "https://cwd273.github.io";
 
 /* Fix iOS viewport height */
 function updateVh() {
