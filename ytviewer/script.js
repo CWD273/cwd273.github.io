@@ -7,13 +7,41 @@ const videoFrame = document.getElementById("video-frame");
 const chatFrame = document.getElementById("chat-frame");
 const EMBED_DOMAIN = window.location.hostname || "https://cwd273.github.io";
 
-/* Fix iOS viewport height */
+/* ── Fix iOS viewport height ── */
 function updateVh() {
   document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
 }
 updateVh();
 window.addEventListener("resize", updateVh);
 
+/*
+ * iOS Safari does NOT fire "resize" when returning via the back button.
+ * "pageshow" fires reliably on back/forward cache restores (persisted=true)
+ * and also on normal loads, so it covers both cases.
+ */
+window.addEventListener("pageshow", (e) => {
+  updateVh();
+  // If the page was restored from bfcache, re-apply fullscreen state
+  if (e.persisted) {
+    const wasFullscreen = sessionStorage.getItem("isFullscreen") === "true";
+    if (wasFullscreen) {
+      container.classList.add("pseudo-fullscreen");
+      document.body.classList.add("is-fullscreen");
+    } else {
+      container.classList.remove("fullscreen", "pseudo-fullscreen");
+      document.body.classList.remove("is-fullscreen");
+    }
+  }
+});
+
+// Also catch visibility changes (tab switch, screen lock, etc.)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    updateVh();
+  }
+});
+
+/* ── YouTube helpers ── */
 function extractVideoId(value) {
   value = value.trim();
   if (!value.includes("http")) return value;
@@ -33,12 +61,13 @@ function loadStream() {
   videoFrame.src = `https://www.youtube.com/embed/${id}`;
   chatFrame.src = `https://www.youtube.com/live_chat?v=${id}&embed_domain=${EMBED_DOMAIN}`;
 }
-
 loadBtn.onclick = loadStream;
 input.onkeydown = e => e.key === "Enter" && loadStream();
 
+/* ── Fullscreen logic ── */
 function isIOS() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
 function enterFullscreen() {
@@ -49,6 +78,7 @@ function enterFullscreen() {
     container.classList.add("pseudo-fullscreen");
   }
   document.body.classList.add("is-fullscreen");
+  sessionStorage.setItem("isFullscreen", "true");
 }
 
 function exitFullscreen() {
@@ -57,6 +87,7 @@ function exitFullscreen() {
   }
   container.classList.remove("fullscreen", "pseudo-fullscreen");
   document.body.classList.remove("is-fullscreen");
+  sessionStorage.setItem("isFullscreen", "false");
 }
 
 fsEnter.onclick = enterFullscreen;
@@ -66,5 +97,6 @@ document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
     container.classList.remove("fullscreen");
     document.body.classList.remove("is-fullscreen");
+    sessionStorage.setItem("isFullscreen", "false");
   }
 });
