@@ -2,26 +2,109 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="google-site-verification" content="rI9K2Pa-DgQO16d4sWBGmKhtm-KiO1B4_1EQXYvrctk" />
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<meta name="google-site-verification"
+      content="rI9K2Pa-DgQO16d4sWBGmKhtm-KiO1B4_1EQXYvrctk" />
+
+<meta name="theme-color" content="#111111" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="YouTube Viewer" />
+
 <title>YouTube Stream Viewer</title>
+
+<link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.ico">
 <link rel="apple-touch-icon" href="icon.png">
+
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
 <header>
-  <input id="yt-input" placeholder="YouTube URL or ID" />
-  <button id="load-btn">Load</button>
-  <button id="fs-enter" aria-label="Enter fullscreen">&#x26F6;</button>
-  <button id="fs-exit" aria-label="Exit fullscreen">&#x2715;</button>
+
+  <input
+    id="yt-input"
+    type="text"
+    placeholder="YouTube URL or ID"
+    autocomplete="off"
+    autocapitalize="none"
+    spellcheck="false"
+  />
+
+  <button id="load-btn">
+    Load
+  </button>
+
+  <button
+    id="account-btn"
+    aria-label="Switch Google Account"
+    title="Switch Google Account"
+  >
+    Account
+  </button>
+
+  <button
+    id="install-btn"
+    aria-label="Install app"
+    title="Install app"
+  >
+    Install
+  </button>
+
+  <button
+    id="fs-enter"
+    aria-label="Enter fullscreen"
+    title="Enter fullscreen"
+  >
+    &#x26F6;
+  </button>
+
+  <button
+    id="fs-exit"
+    aria-label="Exit fullscreen"
+    title="Exit fullscreen"
+  >
+    &#x2715;
+  </button>
+
 </header>
+
 <div id="container">
+
   <div id="video-wrapper">
-    <iframe id="video-frame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <iframe
+      id="video-frame"
+      title="YouTube video player"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      allowfullscreen>
+    </iframe>
   </div>
-  <iframe id="chat-frame"></iframe>
+
+  <iframe
+    id="chat-frame"
+    title="YouTube Live Chat">
+  </iframe>
+
 </div>
+
+<div id="ios-install-message" class="install-message">
+  <strong>Install this app</strong>
+  <span>
+    Tap the Share button in Safari, then select
+    <b>Add to Home Screen</b>.
+  </span>
+  <button id="ios-install-close" aria-label="Close">
+    &#x2715;
+  </button>
+</div>
+
 <script src="script.js"></script>
+
 </body>
 </html>
