@@ -11,14 +11,10 @@ const container = document.getElementById("container");
 const videoFrame = document.getElementById("video-frame");
 const chatFrame = document.getElementById("chat-frame");
 
-const iosInstallMessage =
-  document.getElementById("ios-install-message");
+const iosInstallMessage = document.getElementById("ios-install-message");
+const iosInstallClose = document.getElementById("ios-install-close");
 
-const iosInstallClose =
-  document.getElementById("ios-install-close");
-
-const EMBED_DOMAIN =
-  window.location.hostname || "cwd273.github.io";
+const EMBED_DOMAIN = window.location.hostname || "cwd273.github.io";
 
 
 /* =========================================================
@@ -27,82 +23,45 @@ const EMBED_DOMAIN =
 
 let deferredInstallPrompt = null;
 
-
-/*
- * Register service worker
- */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      const registration =
-        await navigator.serviceWorker.register("./sw.js");
-
-      console.log(
-        "Service worker registered:",
-        registration.scope
-      );
+      const registration = await navigator.serviceWorker.register("./sw.js");
+      console.log("Service worker registered:", registration.scope);
     } catch (error) {
-      console.error(
-        "Service worker registration failed:",
-        error
-      );
+      console.error("Service worker registration failed:", error);
     }
   });
 }
 
-
-/*
- * Android / Chrome / Edge install prompt
- */
+/* Android / Chrome / Edge install prompt */
 window.addEventListener("beforeinstallprompt", (event) => {
-
-  // Prevent browser from immediately displaying its own prompt
   event.preventDefault();
-
   deferredInstallPrompt = event;
-
   installBtn.style.display = "inline-flex";
 });
 
-
 installBtn.addEventListener("click", async () => {
-
   if (!deferredInstallPrompt) {
     showIOSInstallInstructions();
     return;
   }
 
   deferredInstallPrompt.prompt();
-
-  const result =
-    await deferredInstallPrompt.userChoice;
-
-  console.log(
-    "PWA install result:",
-    result.outcome
-  );
+  const result = await deferredInstallPrompt.userChoice;
+  console.log("PWA install result:", result.outcome);
 
   deferredInstallPrompt = null;
-
   installBtn.style.display = "none";
 });
-
 
 window.addEventListener("appinstalled", () => {
-
   console.log("PWA installed");
-
   deferredInstallPrompt = null;
-
   installBtn.style.display = "none";
 });
 
-
-/*
- * Determine whether the site is already running as a PWA
- */
 function isStandalonePWA() {
-
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
     window.matchMedia("(display-mode: fullscreen)").matches ||
@@ -110,29 +69,16 @@ function isStandalonePWA() {
   );
 }
 
-
-/*
- * iOS detection
- */
 function isIOS() {
-
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (
-      navigator.platform === "MacIntel" &&
-      navigator.maxTouchPoints > 1
-    );
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
 }
 
-
-/*
- * Show iOS installation instructions
- */
 function showIOSInstallInstructions() {
-
   if (!isIOS()) {
-    alert(
-      "Use your browser's Install App or Add to Home Screen option."
-    );
+    alert("Use your browser's Install App or Add to Home Screen option.");
     return;
   }
 
@@ -143,19 +89,12 @@ function showIOSInstallInstructions() {
   iosInstallMessage.classList.add("visible");
 }
 
-
 iosInstallClose.addEventListener("click", () => {
   iosInstallMessage.classList.remove("visible");
 });
 
-
-/*
- * Don't show install button if already installed
- */
 if (isStandalonePWA()) {
-
   installBtn.style.display = "none";
-
 }
 
 
@@ -164,61 +103,24 @@ if (isStandalonePWA()) {
    ========================================================= */
 
 function updateVh() {
-
   document.documentElement.style.setProperty(
     "--vh",
     `${window.innerHeight * 0.01}px`
   );
-
 }
 
 updateVh();
 
 window.addEventListener("resize", updateVh);
-
-
-/*
- * iOS Safari does not always fire resize when returning
- * through the back button.
- */
-window.addEventListener("pageshow", (event) => {
-
-  updateVh();
-
-  if (event.persisted) {
-
-    const wasFullscreen =
-      sessionStorage.getItem("isFullscreen") === "true";
-
-    if (wasFullscreen) {
-
-      container.classList.add("pseudo-fullscreen");
-      document.body.classList.add("is-fullscreen");
-
-    } else {
-
-      container.classList.remove(
-        "fullscreen",
-        "pseudo-fullscreen"
-      );
-
-      document.body.classList.remove(
-        "is-fullscreen"
-      );
-
-    }
-
-  }
-
+window.addEventListener("orientationchange", () => {
+  // innerHeight can lag behind the orientation event on iOS
+  setTimeout(updateVh, 100);
 });
 
-
 document.addEventListener("visibilitychange", () => {
-
   if (document.visibilityState === "visible") {
     updateVh();
   }
-
 });
 
 
@@ -227,105 +129,59 @@ document.addEventListener("visibilitychange", () => {
    ========================================================= */
 
 function extractVideoId(value) {
-
   value = value.trim();
 
   if (!value) {
     return null;
   }
 
-  /*
-   * Allow direct video IDs
-   */
+  /* Allow direct video IDs */
   if (!value.includes("http")) {
     return value;
   }
 
   try {
-
     const url = new URL(value);
 
-    /*
-     * Normal YouTube URL
-     * youtube.com/watch?v=XXXXXXXXXXX
-     */
+    /* youtube.com/watch?v=XXXXXXXXXXX */
     if (url.searchParams.has("v")) {
       return url.searchParams.get("v");
     }
 
-    /*
-     * Short URL
-     * youtu.be/XXXXXXXXXXX
-     */
+    /* youtu.be/XXXXXXXXXXX */
     if (url.hostname.includes("youtu.be")) {
-      return url.pathname
-        .split("/")
-        .filter(Boolean)
-        .pop();
+      return url.pathname.split("/").filter(Boolean).pop();
     }
 
-    /*
-     * Embed URL
-     */
-    if (url.pathname.startsWith("/embed/")) {
-      return url.pathname
-        .split("/")
-        .filter(Boolean)
-        .pop();
+    /* /embed/XXXXXXXXXXX  or  /live/XXXXXXXXXXX */
+    if (
+      url.pathname.startsWith("/embed/") ||
+      url.pathname.startsWith("/live/")
+    ) {
+      return url.pathname.split("/").filter(Boolean).pop();
     }
-
-    /*
-     * Live URL
-     * youtube.com/live/XXXXXXXXXXX
-     */
-    if (url.pathname.startsWith("/live/")) {
-      return url.pathname
-        .split("/")
-        .filter(Boolean)
-        .pop();
-    }
-
   } catch (error) {
-
-    console.error(
-      "Unable to parse YouTube URL:",
-      error
-    );
-
+    console.error("Unable to parse YouTube URL:", error);
   }
 
   return null;
 }
 
-
-/*
- * Load YouTube stream and live chat
- */
 function loadStream() {
-
   const id = extractVideoId(input.value);
 
   if (!id) {
-
     alert("Invalid YouTube ID or URL");
-
     return;
   }
 
-
-  /*
-   * YouTube player
-   */
   videoFrame.src =
     `https://www.youtube.com/embed/${encodeURIComponent(id)}` +
     `?autoplay=1` +
     `&rel=0` +
     `&enablejsapi=1`;
 
-
   /*
-   * YouTube Live Chat
-   *
    * The chat session uses the Google account currently
    * signed into the browser/PWA.
    */
@@ -333,25 +189,14 @@ function loadStream() {
     `https://www.youtube.com/live_chat` +
     `?v=${encodeURIComponent(id)}` +
     `&embed_domain=${encodeURIComponent(EMBED_DOMAIN)}`;
-
 }
 
-
-/*
- * Load button
- */
 loadBtn.addEventListener("click", loadStream);
 
-
-/*
- * Enter key
- */
 input.addEventListener("keydown", (event) => {
-
   if (event.key === "Enter") {
     loadStream();
   }
-
 });
 
 
@@ -360,175 +205,124 @@ input.addEventListener("keydown", (event) => {
    ========================================================= */
 
 /*
- * IMPORTANT:
- *
- * Google does not allow a third-party webpage to directly
- * inspect or change the Google account used inside the
- * cross-origin YouTube iframe.
- *
- * Therefore this opens Google's account chooser and sends
- * the user to YouTube after selecting an account.
+ * Google does not allow a third-party page to inspect or change the
+ * account used inside the cross-origin YouTube iframe, so this opens
+ * Google's account chooser instead.
  */
 function switchGoogleAccount() {
-
-  const youtubeURL =
-    "https://www.youtube.com/";
-
   const chooserURL =
     "https://accounts.google.com/AccountChooser" +
     "?continue=" +
-    encodeURIComponent(youtubeURL);
+    encodeURIComponent("https://www.youtube.com/");
 
-  window.open(
-    chooserURL,
-    "_blank",
-    "noopener,noreferrer"
-  );
-
+  window.open(chooserURL, "_blank", "noopener,noreferrer");
 }
 
-
-accountBtn.addEventListener(
-  "click",
-  switchGoogleAccount
-);
+accountBtn.addEventListener("click", switchGoogleAccount);
 
 
 /* =========================================================
    Fullscreen
+   =========================================================
+   Two modes:
+   - native:  Fullscreen API on #container (desktop, Android, iPad)
+   - pseudo:  CSS .pseudo-fullscreen fallback (iPhone Safari, or if
+              the native request is rejected)
+
+   #fs-exit lives inside #container, so it is visible in both.
    ========================================================= */
 
-function enterFullscreen() {
-
-  if (!isIOS() && container.requestFullscreen) {
-
-    container.requestFullscreen()
-      .catch((error) => {
-        console.error(
-          "Fullscreen request failed:",
-          error
-        );
-      });
-
-    container.classList.add("fullscreen");
-
-  } else {
-
-    /*
-     * iOS Safari does not provide normal
-     * element.requestFullscreen() behavior.
-     *
-     * Use pseudo-fullscreen instead.
-     */
-    container.classList.add(
-      "pseudo-fullscreen"
-    );
-
-  }
-
-  document.body.classList.add(
-    "is-fullscreen"
-  );
-
-  sessionStorage.setItem(
-    "isFullscreen",
-    "true"
-  );
-
+function nativeFullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
 }
 
+function isPseudoFullscreen() {
+  return container.classList.contains("pseudo-fullscreen");
+}
+
+function setFullscreenUI(on) {
+  document.body.classList.toggle("is-fullscreen", on);
+}
+
+function enterPseudoFullscreen() {
+  container.classList.add("pseudo-fullscreen");
+  setFullscreenUI(true);
+  sessionStorage.setItem("isFullscreen", "true");
+}
+
+async function enterFullscreen() {
+  const request =
+    container.requestFullscreen || container.webkitRequestFullscreen;
+
+  if (request) {
+    try {
+      await request.call(container);
+      setFullscreenUI(true);
+      return;
+    } catch (error) {
+      console.warn("Native fullscreen failed, using fallback:", error);
+    }
+  }
+
+  enterPseudoFullscreen();
+}
 
 function exitFullscreen() {
+  if (nativeFullscreenElement()) {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
 
-  if (document.fullscreenElement) {
-
-    document.exitFullscreen()
-      .catch(() => {});
-
+    try {
+      const result = exit.call(document);
+      if (result && result.catch) result.catch(() => {});
+    } catch (_) {}
   }
 
-  container.classList.remove(
-    "fullscreen",
-    "pseudo-fullscreen"
-  );
-
-  document.body.classList.remove(
-    "is-fullscreen"
-  );
-
-  sessionStorage.setItem(
-    "isFullscreen",
-    "false"
-  );
-
+  container.classList.remove("pseudo-fullscreen");
+  setFullscreenUI(false);
+  sessionStorage.setItem("isFullscreen", "false");
 }
 
-
-fsEnter.addEventListener(
-  "click",
-  enterFullscreen
-);
-
-fsExit.addEventListener(
-  "click",
-  exitFullscreen
-);
-
+fsEnter.addEventListener("click", enterFullscreen);
+fsExit.addEventListener("click", exitFullscreen);
 
 /*
- * Browser fullscreen changes
+ * Keep UI in sync when the browser leaves native fullscreen itself
+ * (Esc key, swipe gesture, etc.)
  */
-document.addEventListener(
-  "fullscreenchange",
-  () => {
-
-    if (!document.fullscreenElement) {
-
-      container.classList.remove(
-        "fullscreen"
-      );
-
-      /*
-       * Don't remove pseudo-fullscreen here.
-       * It is used by iOS.
-       */
-      if (!isIOS()) {
-
-        document.body.classList.remove(
-          "is-fullscreen"
-        );
-
-        sessionStorage.setItem(
-          "isFullscreen",
-          "false"
-        );
-
-      }
-
-    }
-
+function onNativeFullscreenChange() {
+  if (nativeFullscreenElement()) {
+    setFullscreenUI(true);
+  } else if (!isPseudoFullscreen()) {
+    setFullscreenUI(false);
   }
-);
+}
+
+document.addEventListener("fullscreenchange", onNativeFullscreenChange);
+document.addEventListener("webkitfullscreenchange", onNativeFullscreenChange);
+
+/* Esc exits pseudo-fullscreen (native handles Esc on its own) */
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && isPseudoFullscreen()) {
+    exitFullscreen();
+  }
+});
 
 
 /* =========================================================
-   Restore fullscreen after PWA/page restoration
+   Page restoration (iOS back/forward cache)
    ========================================================= */
 
-window.addEventListener("pageshow", () => {
+window.addEventListener("pageshow", (event) => {
+  updateVh();
 
-  if (
-    sessionStorage.getItem("isFullscreen") === "true"
-  ) {
-
-    container.classList.add(
-      "pseudo-fullscreen"
-    );
-
-    document.body.classList.add(
-      "is-fullscreen"
-    );
-
+  if (!event.persisted) {
+    return;
   }
 
+  if (sessionStorage.getItem("isFullscreen") === "true") {
+    enterPseudoFullscreen();
+  } else {
+    container.classList.remove("pseudo-fullscreen");
+    setFullscreenUI(false);
+  }
 });
