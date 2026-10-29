@@ -188,7 +188,8 @@ function loadStream() {
   chatFrame.src =
     `https://www.youtube.com/live_chat` +
     `?v=${encodeURIComponent(id)}` +
-    `&embed_domain=${encodeURIComponent(EMBED_DOMAIN)}`;
+    `&embed_domain=${encodeURIComponent(EMBED_DOMAIN)}` +
+    `&dark_theme=1`;
 }
 
 loadBtn.addEventListener("click", loadStream);
@@ -229,7 +230,9 @@ accountBtn.addEventListener("click", switchGoogleAccount);
    - pseudo:  CSS .pseudo-fullscreen fallback (iPhone Safari, or if
               the native request is rejected)
 
-   #fs-exit lives inside #container, so it is visible in both.
+   Safe-area margins are handled purely in CSS (the two panes), so
+   entering fullscreen never changes them - it only adds the top inset
+   once the header is gone.
    ========================================================= */
 
 function nativeFullscreenElement() {
@@ -240,8 +243,19 @@ function isPseudoFullscreen() {
   return container.classList.contains("pseudo-fullscreen");
 }
 
+function isFullscreenActive() {
+  return document.body.classList.contains("is-fullscreen");
+}
+
 function setFullscreenUI(on) {
   document.body.classList.toggle("is-fullscreen", on);
+
+  if (on) {
+    showExitButton();
+  } else {
+    clearTimeout(exitHideTimer);
+    fsExit.classList.remove("idle");
+  }
 }
 
 function enterPseudoFullscreen() {
@@ -285,10 +299,7 @@ function exitFullscreen() {
 fsEnter.addEventListener("click", enterFullscreen);
 fsExit.addEventListener("click", exitFullscreen);
 
-/*
- * Keep UI in sync when the browser leaves native fullscreen itself
- * (Esc key, swipe gesture, etc.)
- */
+/* Keep UI in sync when the browser leaves native fullscreen itself */
 function onNativeFullscreenChange() {
   if (nativeFullscreenElement()) {
     setFullscreenUI(true);
@@ -306,6 +317,87 @@ document.addEventListener("keydown", (event) => {
     exitFullscreen();
   }
 });
+
+
+/* =========================================================
+   Exit button: fade out when idle, reappear on activity
+   =========================================================
+   The video and chat are cross-origin iframes, so this page can't see
+   taps or mouse movement *inside* them. Activity is detected from:
+   - touches / pointer movement anywhere outside the iframes
+     (the margins, the button itself)
+   - the invisible hot zone in the top-right corner
+   - the pointer entering either iframe (desktop)
+   - the window losing focus to an iframe (a click/tap inside it;
+     reliable on desktop and Android, best-effort on iOS)
+   ========================================================= */
+
+const EXIT_HIDE_DELAY = 2500;
+
+let exitHideTimer = null;
+let lastReveal = 0;
+
+function showExitButton() {
+  if (!isFullscreenActive()) {
+    return;
+  }
+
+  fsExit.classList.remove("idle");
+
+  clearTimeout(exitHideTimer);
+  exitHideTimer = setTimeout(hideExitButton, EXIT_HIDE_DELAY);
+}
+
+function hideExitButton() {
+  /* Don't hide while the pointer is on it or it has keyboard focus */
+  if (fsExit.matches(":hover") || document.activeElement === fsExit) {
+    exitHideTimer = setTimeout(hideExitButton, EXIT_HIDE_DELAY);
+    return;
+  }
+
+  fsExit.classList.add("idle");
+}
+
+/* Throttled so pointermove doesn't reset the timer hundreds of times/sec */
+function revealOnActivity() {
+  const now = Date.now();
+
+  if (!fsExit.classList.contains("idle") && now - lastReveal < 250) {
+    return;
+  }
+
+  lastReveal = now;
+  showExitButton();
+}
+
+document.addEventListener("pointermove", revealOnActivity, { passive: true });
+document.addEventListener("pointerdown", revealOnActivity, { passive: true });
+document.addEventListener("touchstart", revealOnActivity, { passive: true });
+document.addEventListener("keydown", revealOnActivity);
+
+const fsHotzone = document.getElementById("fs-hotzone");
+
+["pointerenter", "pointermove", "pointerdown"].forEach((type) => {
+  fsHotzone.addEventListener(type, revealOnActivity);
+});
+
+[videoFrame, chatFrame].forEach((frame) => {
+  frame.addEventListener("pointerenter", revealOnActivity);
+  frame.addEventListener("mouseenter", revealOnActivity);
+});
+
+window.addEventListener("blur", () => {
+  /* Focus moved into an iframe = the user interacted with it */
+  setTimeout(() => {
+    const active = document.activeElement;
+
+    if (active === videoFrame || active === chatFrame) {
+      revealOnActivity();
+    }
+  }, 0);
+});
+
+fsExit.addEventListener("focus", showExitButton);
 
 
 /* =========================================================
