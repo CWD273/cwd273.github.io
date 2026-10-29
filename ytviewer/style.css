@@ -1,5 +1,27 @@
 :root {
   --vh: 1vh;
+
+  /* Background of the chat's top bar. Used for the chat-side margins.
+     Eyedrop your actual chat header and adjust if it doesn't match. */
+  --chat-edge: #212121;
+
+  /*
+   * Safe-area margins. These are the ONLY place insets are applied
+   * (via the two panes below), in normal AND fullscreen mode, so
+   * nothing is ever added twice.
+   *
+   * The top inset is 0 in normal mode because the header already
+   * covers the status bar / notch area; it is enabled in fullscreen
+   * where there is no header.
+   */
+  --edge-top: 0px;
+  --edge-bottom: env(safe-area-inset-bottom, 0px);
+  --edge-left: env(safe-area-inset-left, 0px);
+  --edge-right: env(safe-area-inset-right, 0px);
+}
+
+body.is-fullscreen {
+  --edge-top: env(safe-area-inset-top, 0px);
 }
 
 * {
@@ -13,10 +35,6 @@ body {
   margin: 0;
 }
 
-/*
- * Body is a flex column: header on top, container fills the rest.
- * This replaces the old "100vh - 70px" guess.
- */
 body {
   height: calc(var(--vh) * 100);
   display: flex;
@@ -26,9 +44,6 @@ body {
   background: #111;
   color: #eee;
   font-family: system-ui, sans-serif;
-
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 
@@ -39,8 +54,9 @@ body {
 header {
   flex: 0 0 auto;
 
+  /* Header owns the top safe area in normal mode */
   padding:
-    0.75rem
+    max(0.75rem, env(safe-area-inset-top))
     max(0.75rem, env(safe-area-inset-right))
     0.75rem
     max(0.75rem, env(safe-area-inset-left));
@@ -51,7 +67,6 @@ header {
 
   background: #111;
 }
-
 
 input {
   flex: 1;
@@ -73,7 +88,6 @@ input:focus {
   border-color: #777;
 }
 
-
 button {
   flex-shrink: 0;
 
@@ -92,7 +106,6 @@ button {
 
 button:hover  { filter: brightness(1.1); }
 button:active { filter: brightness(0.9); }
-
 
 #account-btn,
 #install-btn {
@@ -129,68 +142,141 @@ body.is-fullscreen #fs-enter {
 }
 
 /*
- * #fs-exit lives inside #container, so it is visible in both
- * native fullscreen and pseudo-fullscreen.
+ * Exit button: lives inside #container so it's visible in native and
+ * pseudo fullscreen. Fades out when idle (see .idle, toggled by JS).
  */
 body.is-fullscreen #fs-exit {
   display: inline-flex;
 
   position: fixed;
-  top: calc(10px + env(safe-area-inset-top));
-  right: calc(10px + env(safe-area-inset-right));
+  top: calc(10px + var(--edge-top));
+  right: calc(10px + var(--edge-right));
   z-index: 10;
 
-  opacity: 0.85;
+  opacity: 0.9;
+  transition: opacity 0.35s ease;
+}
+
+body.is-fullscreen #fs-exit.idle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * Invisible tap/hover target in the top-right corner. The video and chat
+ * are cross-origin iframes, so the page never sees touches or mouse moves
+ * inside them. This zone is a guaranteed way to bring the button back.
+ * It only captures input while the button is hidden.
+ */
+#fs-hotzone {
+  display: none;
+}
+
+body.is-fullscreen #fs-hotzone {
+  display: block;
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: calc(5rem + var(--edge-right));
+  height: calc(4.5rem + var(--edge-top));
+  z-index: 9;
+
+  background: transparent;
+  touch-action: manipulation;
+}
+
+#fs-exit:not(.idle) ~ #fs-hotzone {
+  pointer-events: none;
 }
 
 
 /* =========================================================
-   Main layout (shared by normal AND fullscreen)
+   Container
    ========================================================= */
 
 #container {
   flex: 1 1 auto;
   min-height: 0;
 
-  display: grid;
-
-  /* Portrait: video on top (16:9), chat fills the rest */
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  position: relative;
+  overflow: hidden;
 
   background: #000;
-  overflow: hidden;
+
+  /*
+   * Lets the layout below size the video from the container's real
+   * dimensions (cqw / cqh units).
+   */
+  container-type: size;
 }
 
 /*
- * Wide screens OR landscape phones: video left, chat right
+ * Never let the browser or iOS add its own padding/margin to the
+ * element that goes fullscreen. Margins come only from the panes.
  */
-@media (min-width: 900px), (orientation: landscape) {
+#container,
+#container:fullscreen,
+#container.pseudo-fullscreen {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+}
 
-  #container {
-    grid-template-columns: minmax(0, 1fr) clamp(260px, 32vw, 420px);
-    grid-template-rows: minmax(0, 1fr);
-  }
-
-  #video-wrapper {
-    aspect-ratio: auto;
-    height: 100%;
-  }
-
+#container.pseudo-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
 }
 
 
 /* =========================================================
-   Video
+   Layout
    ========================================================= */
+
+#layout {
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+
+  /* Portrait: video on top, chat fills the rest */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+
+/* ---------- Panes (these carry the safe-area margins) ---------- */
+
+#video-pane,
+#chat-pane {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Video side: solid black */
+#video-pane {
+  background: #000;
+  padding: var(--edge-top) var(--edge-right) 0 var(--edge-left);
+}
+
+/* Chat side: same colour as the chat's top bar */
+#chat-pane {
+  background: var(--chat-edge);
+  padding: 0 var(--edge-right) var(--edge-bottom) var(--edge-left);
+}
+
+
+/* ---------- Video ---------- */
 
 #video-wrapper {
   position: relative;
   min-width: 0;
   min-height: 0;
 
-  width: 100%;
   aspect-ratio: 16 / 9;
+  align-self: start;
 
   background: #000;
 }
@@ -202,13 +288,11 @@ body.is-fullscreen #fs-exit {
   width: 100%;
   height: 100%;
 
-  border: none;
+  border: 0;
 }
 
 
-/* =========================================================
-   Chat
-   ========================================================= */
+/* ---------- Chat ---------- */
 
 #chat-frame {
   width: 100%;
@@ -216,45 +300,63 @@ body.is-fullscreen #fs-exit {
   min-width: 0;
   min-height: 0;
 
-  border: none;
-  background: #1f1f1f;
+  border: 0;
+  background: var(--chat-edge);
 }
 
 
-/* =========================================================
-   Fullscreen
-   Only the positioning changes; the grid layout above is reused.
-   ========================================================= */
+/* ---------- Wide screens and landscape phones ---------- */
 
-/* iOS / fallback */
-#container.pseudo-fullscreen {
-  position: fixed;
-  inset: 0;
-  z-index: 9998;
+@media (min-width: 900px), (orientation: landscape) {
 
-  padding:
-    env(safe-area-inset-top)
-    env(safe-area-inset-right)
-    env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  #layout {
+    /* Fallback for browsers without container query units */
+    grid-template-columns: minmax(0, 1fr) clamp(260px, 32vw, 420px);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* Left pane gets the left inset, right pane gets the right inset */
+  #video-pane {
+    padding: var(--edge-top) 0 var(--edge-bottom) var(--edge-left);
+  }
+
+  #chat-pane {
+    padding: var(--edge-top) var(--edge-right) var(--edge-bottom) 0;
+  }
+
+  #video-wrapper {
+    aspect-ratio: auto;
+    align-self: stretch;
+  }
+
 }
 
-/* Native Fullscreen API (browser sizes the element itself) */
-#container:fullscreen {
-  padding:
-    env(safe-area-inset-top)
-    env(safe-area-inset-right)
-    env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-}
+/*
+ * Make the video as large as the available height allows (true 16:9,
+ * no black bars), and give the chat everything that's left, but never
+ * less than --chat-min.
+ */
+@supports (width: 1cqw) {
+  @media (min-width: 900px), (orientation: landscape) {
 
-/* Separate rule: an unknown selector would invalidate the one above */
-#container:-webkit-full-screen {
-  padding:
-    env(safe-area-inset-top)
-    env(safe-area-inset-right)
-    env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+    #layout {
+      --chat-min: clamp(260px, 26cqw, 420px);
+
+      grid-template-columns:
+        minmax(
+          0,
+          min(
+            calc(
+              var(--edge-left) +
+              (100cqh - var(--edge-top) - var(--edge-bottom)) * 16 / 9
+            ),
+            calc(100cqw - var(--chat-min))
+          )
+        )
+        minmax(0, 1fr);
+    }
+
+  }
 }
 
 
