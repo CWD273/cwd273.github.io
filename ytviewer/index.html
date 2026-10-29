@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 
 <meta name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
 
 <meta name="google-site-verification"
       content="rI9K2Pa-DgQO16d4sWBGmKhtm-KiO1B4_1EQXYvrctk" />
@@ -95,8 +95,8 @@
     title="Exit fullscreen"
   >&#x2715;</button>
 
-  <!-- Must come AFTER #fs-exit (CSS uses a sibling selector) -->
-  <div id="fs-hotzone" aria-hidden="true"></div>
+  <!-- Catches taps / mouse movement while the exit button is hidden -->
+  <div id="fs-shield" aria-hidden="true"></div>
 
 </div>
 

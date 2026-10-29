@@ -225,9 +225,11 @@ function setFullscreenUI(on) {
   document.body.classList.toggle("is-fullscreen", on);
 
   if (on) {
-    showExitButton();
+    showExitButton("mouse");
   } else {
     clearTimeout(exitHideTimer);
+    clearTimeout(shieldOffTimer);
+    setShield(false);
     fsExit.classList.remove("idle");
   }
 }
@@ -296,22 +298,35 @@ document.addEventListener("keydown", (event) => {
 /* =========================================================
    Exit button: fade out when idle, reappear on activity
    =========================================================
-   The video and chat are cross-origin iframes, so this page can't see
-   taps or mouse movement *inside* them. Activity is detected from:
-   - touches / pointer movement anywhere outside the iframes
-     (the margins, the button itself)
-   - the invisible hot zone in the top-right corner
-   - the pointer entering either iframe (desktop)
-   - the window losing focus to an iframe (a click/tap inside it;
-     reliable on desktop and Android, best-effort on iOS)
+   The video and chat are cross-origin iframes, so this page never sees
+   taps or mouse movement *inside* them (and the window "blur" trick only
+   fires the first time focus enters an iframe).
+
+   Instead, while the button is hidden a transparent shield (#fs-shield)
+   covers the iframes. The next tap / mouse move / scroll wheel lands on
+   the shield, which brings the button back and switches itself off so
+   the iframes work normally again. When the button fades, the shield
+   switches back on. The one trade-off: the first touch after the button
+   has faded is used to wake it up, like most video players' controls.
    ========================================================= */
 
 const EXIT_HIDE_DELAY = 2500;
 
+/* After a touch wakes the button, keep the shield up briefly so the
+   browser's follow-up "click" doesn't also land on the iframe. */
+const TOUCH_SHIELD_RELEASE_DELAY = 450;
+
+const fsShield = document.getElementById("fs-shield");
+
 let exitHideTimer = null;
+let shieldOffTimer = null;
 let lastReveal = 0;
 
-function showExitButton() {
+function setShield(on) {
+  document.body.classList.toggle("fs-shield-on", on);
+}
+
+function showExitButton(pointerType) {
   if (!isFullscreenActive()) {
     return;
   }
@@ -320,6 +335,14 @@ function showExitButton() {
 
   clearTimeout(exitHideTimer);
   exitHideTimer = setTimeout(hideExitButton, EXIT_HIDE_DELAY);
+
+  clearTimeout(shieldOffTimer);
+
+  if (pointerType === "touch") {
+    shieldOffTimer = setTimeout(() => setShield(false), TOUCH_SHIELD_RELEASE_DELAY);
+  } else {
+    setShield(false);
+  }
 }
 
 function hideExitButton() {
@@ -330,10 +353,21 @@ function hideExitButton() {
   }
 
   fsExit.classList.add("idle");
+
+  clearTimeout(shieldOffTimer);
+  setShield(true);
+}
+
+function pointerTypeOf(event) {
+  if (event.pointerType) {
+    return event.pointerType;
+  }
+
+  return event.type && event.type.startsWith("touch") ? "touch" : "mouse";
 }
 
 /* Throttled so pointermove doesn't reset the timer hundreds of times/sec */
-function revealOnActivity() {
+function revealOnActivity(event) {
   const now = Date.now();
 
   if (!fsExit.classList.contains("idle") && now - lastReveal < 250) {
@@ -341,37 +375,30 @@ function revealOnActivity() {
   }
 
   lastReveal = now;
-  showExitButton();
+  showExitButton(event ? pointerTypeOf(event) : "mouse");
 }
 
+/* Margins, the button itself, and anything else outside the iframes */
 document.addEventListener("pointermove", revealOnActivity, { passive: true });
 document.addEventListener("pointerdown", revealOnActivity, { passive: true });
 document.addEventListener("touchstart", revealOnActivity, { passive: true });
 document.addEventListener("keydown", revealOnActivity);
 
-const fsHotzone = document.getElementById("fs-hotzone");
-
-["pointerenter", "pointermove", "pointerdown"].forEach((type) => {
-  fsHotzone.addEventListener(type, revealOnActivity);
+/* The shield (i.e. taps / movement over the video and chat) */
+["pointerdown", "pointermove", "touchstart"].forEach((type) => {
+  fsShield.addEventListener(type, revealOnActivity, { passive: true });
 });
 
-[videoFrame, chatFrame].forEach((frame) => {
-  frame.addEventListener("pointerenter", revealOnActivity);
-  frame.addEventListener("mouseenter", revealOnActivity);
-});
+fsShield.addEventListener(
+  "wheel",
+  () => {
+    lastReveal = 0;
+    showExitButton("mouse");
+  },
+  { passive: true }
+);
 
-window.addEventListener("blur", () => {
-  /* Focus moved into an iframe = the user interacted with it */
-  setTimeout(() => {
-    const active = document.activeElement;
-
-    if (active === videoFrame || active === chatFrame) {
-      revealOnActivity();
-    }
-  }, 0);
-});
-
-fsExit.addEventListener("focus", showExitButton);
+fsExit.addEventListener("focus", () => showExitButton("mouse"));
 
 
 /* =========================================================

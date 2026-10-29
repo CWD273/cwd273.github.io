@@ -28,6 +28,7 @@ body.is-fullscreen {
 
 html {
   background: var(--bar-bg);
+  overflow: hidden;
 
   /* Stops iOS from rescaling text when the device rotates */
   -webkit-text-size-adjust: 100%;
@@ -173,28 +174,31 @@ body.is-fullscreen #fs-exit.idle {
   pointer-events: none;
 }
 
-/* Invisible tap/hover target in the top-right corner. The iframes are
-   cross-origin, so this is a guaranteed way to bring the button back. */
-#fs-hotzone {
+/*
+ * Transparent layer over the video and chat. The iframes are cross-origin,
+ * so the page can't see taps or mouse movement inside them. While the exit
+ * button is hidden, this layer is switched on (.fs-shield-on, set by JS) to
+ * catch the next tap / mouse move, which brings the button back. It then
+ * switches itself off so the iframes work normally again.
+ */
+#fs-shield {
   display: none;
 }
 
-body.is-fullscreen #fs-hotzone {
+body.is-fullscreen #fs-shield {
   display: block;
 
   position: fixed;
-  top: 0;
-  right: 0;
-  width: calc(5rem + var(--edge-right));
-  height: calc(4.5rem + var(--edge-top));
+  inset: 0;
   z-index: 9;
 
   background: transparent;
+  pointer-events: none;
   touch-action: manipulation;
 }
 
-#fs-exit:not(.idle) ~ #fs-hotzone {
-  pointer-events: none;
+body.is-fullscreen.fs-shield-on #fs-shield {
+  pointer-events: auto;
 }
 
 
@@ -306,10 +310,15 @@ body.is-fullscreen #fs-hotzone {
 
 #chat-frame {
   flex: 1 1 0;
-  min-width: 0;
   min-height: 0;
 
-  width: 100%;
+  /*
+   * iOS Safari quirk: an iframe with width:100% can end up sized to its
+   * own content instead of its container, which clips the chat. A 1px
+   * width plus min-width:100% forces it to follow the container.
+   */
+  width: 1px;
+  min-width: 100%;
 
   border: 0;
   background: var(--chat-edge);
@@ -331,7 +340,7 @@ body.is-fullscreen #fs-hotzone {
 
   #layout {
     /* Fallback for browsers without container query units */
-    grid-template-columns: minmax(0, 1fr) clamp(260px, 32vw, 420px);
+    grid-template-columns: minmax(0, 1fr) calc(clamp(300px, 34vw, 420px) + var(--edge-right));
     grid-template-rows: minmax(0, 1fr);
   }
 
@@ -355,14 +364,15 @@ body.is-fullscreen #fs-hotzone {
 
 /*
  * Give the video the largest 16:9 area the height allows, and give the
- * chat everything that's left (never less than --chat-min). If the
+ * chat everything that's left (chat width is clamp(300px, 34%, 420px)). If the
  * video column ends up narrower than 16:9, the player letterboxes.
  */
 @supports (width: 1cqw) {
   @media (min-width: 900px), (orientation: landscape) {
 
     #layout {
-      --chat-min: clamp(260px, 26cqw, 420px);
+      /* Whole chat column = comfortable chat width + the right margin */
+      --chat-col: calc(clamp(300px, 34cqw, 420px) + var(--edge-right));
 
       grid-template-columns:
         minmax(
@@ -372,7 +382,7 @@ body.is-fullscreen #fs-hotzone {
               var(--edge-left) +
               (100cqh - var(--edge-top) - var(--edge-bottom)) * 16 / 9
             ),
-            calc(100cqw - var(--chat-min))
+            calc(100cqw - var(--chat-col))
           )
         )
         minmax(0, 1fr);
