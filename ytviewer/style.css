@@ -10,19 +10,23 @@ html,
 body {
   width: 100%;
   height: 100%;
+  margin: 0;
 }
 
+/*
+ * Body is a flex column: header on top, container fills the rest.
+ * This replaces the old "100vh - 70px" guess.
+ */
 body {
-  margin: 0;
+  height: calc(var(--vh) * 100);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
   background: #111;
   color: #eee;
   font-family: system-ui, sans-serif;
-  overflow-x: hidden;
 
-  /*
-   * Helps iOS PWA layouts account for the
-   * notch / Dynamic Island.
-   */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -33,6 +37,8 @@ body {
    ========================================================= */
 
 header {
+  flex: 0 0 auto;
+
   padding:
     0.75rem
     max(0.75rem, env(safe-area-inset-right))
@@ -44,9 +50,6 @@ header {
   align-items: center;
 
   background: #111;
-
-  position: relative;
-  z-index: 10;
 }
 
 
@@ -65,7 +68,6 @@ input {
   font-size: 16px;
 }
 
-
 input:focus {
   outline: none;
   border-color: #777;
@@ -73,6 +75,8 @@ input:focus {
 
 
 button {
+  flex-shrink: 0;
+
   padding: 0.65rem 1rem;
 
   border: none;
@@ -86,26 +90,14 @@ button {
   cursor: pointer;
 }
 
+button:hover  { filter: brightness(1.1); }
+button:active { filter: brightness(0.9); }
 
-button:hover {
-  filter: brightness(1.1);
-}
-
-
-button:active {
-  filter: brightness(0.9);
-}
-
-
-/* =========================================================
-   Account / Install buttons
-   ========================================================= */
 
 #account-btn,
 #install-btn {
   white-space: nowrap;
 }
-
 
 #install-btn {
   display: none;
@@ -118,107 +110,71 @@ button:active {
 
 #fs-enter,
 #fs-exit {
-
   width: 2.5rem;
   height: 2.5rem;
-
   padding: 0;
-  margin-left: 0.25rem;
 
   font-size: 1.2rem;
   line-height: 1;
 
-  display: inline-flex;
-
   align-items: center;
   justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 4px;
-  background: #e53935;
 }
 
+#fs-enter { display: inline-flex; }
+#fs-exit  { display: none; }
 
-/*
- * Normal mode
- */
-#fs-enter {
-  display: inline-flex;
-}
-
-#fs-exit {
-  display: none;
-}
-
-
-/*
- * Fullscreen mode
- */
 body.is-fullscreen #fs-enter {
   display: none;
 }
 
-
+/*
+ * #fs-exit lives inside #container, so it is visible in both
+ * native fullscreen and pseudo-fullscreen.
+ */
 body.is-fullscreen #fs-exit {
-
   display: inline-flex;
 
   position: fixed;
-
-  top:
-    calc(
-      10px +
-      env(safe-area-inset-top)
-    );
-
-  right:
-    calc(
-      10px +
-      env(safe-area-inset-right)
-    );
-
-  z-index: 99999;
+  top: calc(10px + env(safe-area-inset-top));
+  right: calc(10px + env(safe-area-inset-right));
+  z-index: 10;
 
   opacity: 0.85;
-
-  width: 2.5rem;
-  height: 2.5rem;
 }
 
 
 /* =========================================================
-   Main layout
+   Main layout (shared by normal AND fullscreen)
    ========================================================= */
 
 #container {
+  flex: 1 1 auto;
+  min-height: 0;
 
   display: grid;
 
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
+  /* Portrait: video on top (16:9), chat fills the rest */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
 
-  height:
-    calc(
-      var(--vh) * 100 -
-      70px
-    );
-
+  background: #000;
   overflow: hidden;
 }
 
-
 /*
- * Wide screens:
- * video left, chat right
+ * Wide screens OR landscape phones: video left, chat right
  */
-@media (min-width: 900px) {
+@media (min-width: 900px), (orientation: landscape) {
 
   #container {
+    grid-template-columns: minmax(0, 1fr) clamp(260px, 32vw, 420px);
+    grid-template-rows: minmax(0, 1fr);
+  }
 
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr;
-
+  #video-wrapper {
+    aspect-ratio: auto;
+    height: 100%;
   }
 
 }
@@ -229,41 +185,24 @@ body.is-fullscreen #fs-exit {
    ========================================================= */
 
 #video-wrapper {
-
   position: relative;
+  min-width: 0;
+  min-height: 0;
 
   width: 100%;
-
   aspect-ratio: 16 / 9;
 
   background: #000;
-
 }
-
-
-@media (min-width: 900px) {
-
-  #video-wrapper {
-
-    aspect-ratio: auto;
-    height: 100%;
-
-  }
-
-}
-
 
 #video-frame {
-
   position: absolute;
-
   inset: 0;
 
   width: 100%;
   height: 100%;
 
   border: none;
-
 }
 
 
@@ -272,147 +211,50 @@ body.is-fullscreen #fs-exit {
    ========================================================= */
 
 #chat-frame {
-
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
 
   border: none;
-
   background: #1f1f1f;
-
-  min-height: 300px;
-
 }
 
 
 /* =========================================================
-   Pseudo / real fullscreen
+   Fullscreen
+   Only the positioning changes; the grid layout above is reused.
    ========================================================= */
 
-.fullscreen,
-.pseudo-fullscreen {
+/* iOS / fallback */
+#container.pseudo-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
 
-  position: fixed !important;
-
-  inset: 0 !important;
-
-  z-index: 9998 !important;
-
-  display: grid !important;
-
-  width: 100vw !important;
-
-  height:
-    calc(
-      var(--vh) * 100
-    ) !important;
-
-  overflow: hidden !important;
-
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
-
-/*
- * Portrait fullscreen
- */
-.fullscreen,
-.pseudo-fullscreen {
-
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-
+/* Native Fullscreen API (browser sizes the element itself) */
+#container:fullscreen {
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
-
-.fullscreen #video-wrapper,
-.pseudo-fullscreen #video-wrapper {
-
-  aspect-ratio: 16 / 9;
-
-  width: 100%;
-  height: auto;
-
-  max-width: 100%;
-
-}
-
-
-.fullscreen #chat-frame,
-.pseudo-fullscreen #chat-frame {
-
-  height: 100%;
-
-  min-height: 0;
-
-}
-
-
-/*
- * Landscape fullscreen
- */
-@media (orientation: landscape) {
-
-  .fullscreen,
-  .pseudo-fullscreen {
-
-    grid-template-columns: auto 1fr;
-    grid-template-rows: 1fr;
-
-  }
-
-
-  .fullscreen #video-wrapper,
-  .pseudo-fullscreen #video-wrapper {
-
-    height: 100%;
-
-    width: auto;
-
-    max-width: 100vw;
-
-    aspect-ratio: 16 / 9;
-
-  }
-
-
-  .fullscreen #chat-frame,
-  .pseudo-fullscreen #chat-frame {
-
-    min-height: 0;
-
-    min-width: 200px;
-
-  }
-
-}
-
-
-/*
- * Desktop fullscreen
- */
-@media (min-width: 900px) {
-
-  .fullscreen,
-  .pseudo-fullscreen {
-
-    grid-template-columns: 3fr 1fr !important;
-    grid-template-rows: 1fr !important;
-
-  }
-
-
-  .fullscreen #video-wrapper,
-  .pseudo-fullscreen #video-wrapper {
-
-    aspect-ratio: auto;
-
-    width: 100%;
-    height: 100%;
-
-    max-width: unset;
-
-  }
-
+/* Separate rule: an unknown selector would invalidate the one above */
+#container:-webkit-full-screen {
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
 
@@ -421,17 +263,11 @@ body.is-fullscreen #fs-exit {
    ========================================================= */
 
 .install-message {
-
   position: fixed;
 
   left: 1rem;
   right: 1rem;
-
-  bottom:
-    calc(
-      1rem +
-      env(safe-area-inset-bottom)
-    );
+  bottom: calc(1rem + env(safe-area-inset-bottom));
 
   z-index: 100000;
 
@@ -440,58 +276,37 @@ body.is-fullscreen #fs-exit {
   padding: 1rem;
 
   border-radius: 8px;
-
   background: #222;
-
   border: 1px solid #444;
-
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 
   line-height: 1.4;
 }
 
-
 .install-message.visible {
-
   display: flex;
-
   flex-direction: column;
-
   gap: 0.5rem;
-
 }
-
 
 .install-message strong {
-
   font-size: 1rem;
-
 }
-
 
 .install-message span {
-
   color: #ccc;
-
 }
 
-
 .install-message button {
-
   position: absolute;
-
   top: 0.5rem;
   right: 0.5rem;
 
   width: 2rem;
   height: 2rem;
-
   padding: 0;
 
   display: flex;
-
   align-items: center;
   justify-content: center;
-
 }
