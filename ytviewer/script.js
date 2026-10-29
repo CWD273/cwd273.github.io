@@ -99,32 +99,6 @@ if (isStandalonePWA()) {
 
 
 /* =========================================================
-   iOS viewport handling
-   ========================================================= */
-
-function updateVh() {
-  document.documentElement.style.setProperty(
-    "--vh",
-    `${window.innerHeight * 0.01}px`
-  );
-}
-
-updateVh();
-
-window.addEventListener("resize", updateVh);
-window.addEventListener("orientationchange", () => {
-  // innerHeight can lag behind the orientation event on iOS
-  setTimeout(updateVh, 100);
-});
-
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    updateVh();
-  }
-});
-
-
-/* =========================================================
    YouTube helpers
    ========================================================= */
 
@@ -405,8 +379,6 @@ fsExit.addEventListener("focus", showExitButton);
    ========================================================= */
 
 window.addEventListener("pageshow", (event) => {
-  updateVh();
-
   if (!event.persisted) {
     return;
   }
